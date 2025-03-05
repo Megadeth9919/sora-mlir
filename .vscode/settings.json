@@ -1,0 +1,21 @@
+{
+  "files.associations": {
+    "*.S": "arm",
+    "*.tb": "tablegen",
+    "README": "markdown",
+    "*.cu": "cpp",
+    "*.ttir": "mlir",
+    "*.ttgir": "mlir",
+    "*.llir": "llvm",
+    "*.inc": "cpp",
+    "deque": "cpp",
+    "string": "cpp",
+    "unordered_map": "cpp",
+    "vector": "cpp"
+  },
+
+  // python configuration
+  "python.analysis.extraPaths": [
+    "./install/python"
+  ],
+}
