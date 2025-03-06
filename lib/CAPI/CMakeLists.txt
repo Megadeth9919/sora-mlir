@@ -1,0 +1,12 @@
+add_mlir_public_c_api_library(SoraMLIRCAPI
+  Dialects.cpp
+  RegisterEverything.cpp
+
+  LINK_COMPONENTS # from llvm
+  Core
+
+  LINK_LIBS PUBLIC
+  SoraDialect
+  MLIRIR
+  MLIRFuncDialect
+)

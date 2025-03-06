@@ -23,18 +23,17 @@ declare_mlir_dialect_python_bindings(
   SOURCES
     dialects/SoraOps.py
   DIALECT_NAME sora
-  GEN_ENUM_BINDINGS)
+  )
 
 
-# declare_mlir_python_extension(SoraMLIRPythonSources.RegisterEverything
-#   MODULE_NAME _soraDialects
-#   ADD_TO_PARENT SoraMLIRPythonSources
-#   ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/sora_mlir"
-#   SOURCES
-#     RegisterEverything.cpp
-#     EMBED_CAPI_LINK_LIBS
-#     SoraMLIRCAPI
-# )
+declare_mlir_python_extension(SoraMLIRPythonExtension.RegisterEverything
+  MODULE_NAME _mlirRegisterEverything # 该name与RegisterEverything.cpp中PYBIND11_MODULE(_mlirRegisterEverything, m)对应
+  ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/sora_mlir"
+  SOURCES
+    RegisterEverything.cpp
+  EMBED_CAPI_LINK_LIBS
+    SoraMLIRCAPI
+)
 
 ################################################################################
 # Common CAPI dependency DSO.
@@ -49,7 +48,8 @@ add_mlir_python_common_capi_library(SoraMLIRPythonCAPI
   RELATIVE_INSTALL_ROOT "../../.."
   DECLARED_SOURCES
     SoraMLIRPythonSources
-    MLIRPythonExtension.RegisterEverything
+    # MLIRPythonExtension.RegisterEverything  # be replaced by SoraMLIRPythonExtention.RegisterEverything
+    SoraMLIRPythonExtension.RegisterEverything
     MLIRPythonSources.Core
   # EMBED_LIBS
   # ...
@@ -64,7 +64,9 @@ add_mlir_python_modules(SoraMLIRPythonModules
   INSTALL_PREFIX "python/mlir/"
   DECLARED_SOURCES
     SoraMLIRPythonSources
+    SoraMLIRPythonExtension.RegisterEverything
     MLIRPythonSources.Core
+    MLIRPythonSources.Dialects.func
   COMMON_CAPI_LINK_LIBS
     SoraMLIRPythonCAPI
 )

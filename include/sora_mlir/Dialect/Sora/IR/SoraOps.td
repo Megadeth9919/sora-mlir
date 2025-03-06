@@ -48,6 +48,14 @@ def Sora_WeightOp : Sora_Op<"Weight"> {
   let results = (outs AnyTensor:$output);
 }
 
+def Sora_NoneOp : Sora_Op<"None"> {
+  let summary = "none operator";
+
+  let description = [{
+    A none Op to return a NoneType.
+  }];
+  let results = (outs NoneType);
+}
 
 def Sora_SoftmaxOp: Sora_Op<"Softmax"> {
   let summary = "Softmax operation";

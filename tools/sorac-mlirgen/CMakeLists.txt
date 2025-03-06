@@ -1,7 +1,7 @@
 add_mlir_tool(sorac-mlirgen sorac-mlirgen.cpp)
 target_link_libraries(sorac-mlirgen
   PRIVATE
-  Sora
+  SoraDialect
   MLIRIR
   MLIRParser
   MLIRSupport
