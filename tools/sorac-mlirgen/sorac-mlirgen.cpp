@@ -46,6 +46,7 @@ public:
   func::FuncOp buildFuncOp(TypeRange inpuType, TypeRange outputType) {
     auto functionType = FunctionType::get(builder.getContext(), inpuType, outputType);
     auto op = builder.create<func::FuncOp>(unknowloc, "main", functionType);
+    op.addEntryBlock();
     auto &entryBlock = op.front();
     builder.setInsertionPointToStart(&entryBlock);
     return op;
@@ -58,13 +59,13 @@ public:
     auto outScaleType = RankedTensorType::get(scale_shape, builder.getF32Type());
     auto funcOp = buildFuncOp({inOutType},{ inOutType, outScaleType});
     auto softmaxOp = builder.create<sora::SoftmaxOp>(unknowloc, inOutType, outScaleType, funcOp.getArgument(0), -1, true);
-    auto returnOp = builder.create<func::ReturnOp>(unknowloc, softmaxOp);
+    auto returnOp = builder.create<func::ReturnOp>(unknowloc, softmaxOp->getResults());
+
     // auto returnOp = dyn_cast<func::ReturnOp>(funcOp.back());
   }
 
   ModuleOp mlirGen() {
-    auto softmaxOp = softmax();
-    
+    softmax();  
     return theModule;
   }
 
