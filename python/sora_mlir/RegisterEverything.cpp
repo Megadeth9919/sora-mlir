@@ -8,6 +8,7 @@ PYBIND11_MODULE(_mlirRegisterEverything, m) {
   m.def("register_dialects", [](MlirDialectRegistry registry) {
     mlirRegisterAllDialects(registry);
   });
-  m.def("register_llvm_translations",
-        [](MlirContext context) { mlirRegisterAllLLVMTranslations(context); });
+  m.def("register_llvm_translations", [](MlirContext context) { 
+    mlirRegisterAllLLVMTranslations(context);
+  });
 }

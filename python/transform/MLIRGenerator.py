@@ -1,15 +1,28 @@
 # import mlir.dialects.SoraOps as sora
 from mlir.ir import *
+class Shape(tuple):
+    def __new__(cls, *args):
+        if len(args) == 1 and isinstance(args[0], (list, tuple)):
+            return super().__new__(cls, args[0])
+        else:
+            return super().__new__(cls, args)
+    def __init__(self, *args):
+        self.dim = len(self)
 
+    def prod(self, start=0) -> int:
+        ret = 1
+        for x in self[start:]:
+            ret *= x
+        return ret
 class MLIRGenerator():
   
     def __init__(self,
-                 input_shapes: list[list],
-                 output_shapes: list[list],
+                 input_shapes: list[Shape],
+                 output_shapes: list[Shape],
                  model_name: str,
-                 input_types: list[str] = [],
-                 output_types: list[str] = [],
-                 do_declare: bool = True,):
+                 input_types: list = [],
+                 output_types: list = [],
+                 do_declare: bool = True):
         assert (len(model_name) > 0)
         self.model_name = model_name
         self.ctx = Context()
@@ -51,26 +64,29 @@ class MLIRGenerator():
         except:
             pass
     
-    def get_module_asm(self):
-        mlir_format = self.mlir_module.operation.get_asm(enable_debug_info=True)
+    def get_module_asm(self, enable_debug_info=True):
+        mlir_format = self.mlir_module.operation.get_asm(enable_debug_info)
         return mlir_format
     
-    def get_tensor_type(self, output_shapes, type=None):
+    def print_module(self):
+        self.mlir_module.operation.print()
+    
+    def get_tensor_type(self, shapes:list|tuple, type=None):
         if type is None:
-            type = self.F32Type
-        if output_shapes == []:
+            type = self.mlir_type['F32']
+        if shapes == []:
             return UnrankedTensorType.get(type)
-        if output_shapes is None:
+        if shapes is None:
             return NoneType.get()
-        if isinstance(output_shapes, tuple):
-            output_shapes = list(output_shapes)
-        assert (isinstance(output_shapes, list))
-        assert (len(output_shapes) > 0)
-        if not isinstance(output_shapes[0], list) and output_shapes[0] is not None:
-            return RankedTensorType.get(tuple(output_shapes), type)
+        if isinstance(shapes, tuple):
+            shapes = list(shapes)
+        assert (isinstance(shapes, list))
+        assert (len(shapes) > 0)
+        if not isinstance(shapes[0], list) and shapes[0] is not None:
+            return RankedTensorType.get(tuple(shapes), type)
         # multi output
         out_types = []
-        for s in output_shapes:
+        for s in shapes:
             if s == []:
                 out_types.append(UnrankedTensorType.get(type))
             elif s is None:
@@ -136,8 +152,8 @@ class MLIRGenerator():
         self.insert_point = InsertionPoint(self.entry_block)
         self.none_op = self.entry_block.operations[0].operation.results[0]
         # remove Placeholder.Op and return Op.
-        self.entry_block.operations[1].operation.erase()
         self.entry_block.operations[2].operation.erase()
+        self.entry_block.operations[1].operation.erase()
         
         self.func_args = list()
         for i in self.entry_block.arguments:

@@ -1,0 +1,3 @@
+[submodule "python/soracc_legacy"]
+	path = python/soracc_legacy
+	url = https://gitlab.infini-ai.com/infini-ip/school_project/sora_cc.git
