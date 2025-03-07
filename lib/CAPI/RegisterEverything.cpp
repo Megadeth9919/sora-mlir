@@ -9,3 +9,7 @@ void mlirRegisterAllDialects(MlirDialectRegistry registry) {
   static_cast<mlir::DialectRegistry *>(registry.ptr)
       ->insert<mlir::func::FuncDialect, sora_mlir::sora::SoraDialect>();
 }
+
+void mlirRegisterAllLLVMTranslations(MlirContext context) {
+  
+}

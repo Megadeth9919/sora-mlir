@@ -9,7 +9,7 @@ extern "C" {
 
 /// Appends all upstream dialects and extensions to the dialect registry.
 MLIR_CAPI_EXPORTED void mlirRegisterAllDialects(MlirDialectRegistry registry);
-
+MLIR_CAPI_EXPORTED void mlirRegisterAllLLVMTranslations(MlirContext context);
 #ifdef __cplusplus
 }
 #endif

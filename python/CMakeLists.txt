@@ -33,6 +33,7 @@ declare_mlir_python_extension(SoraMLIRPythonExtension.RegisterEverything
     RegisterEverything.cpp
   EMBED_CAPI_LINK_LIBS
     SoraMLIRCAPI
+    MLIRCAPITransforms
 )
 
 ################################################################################
