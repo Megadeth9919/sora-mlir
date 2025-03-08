@@ -61,7 +61,6 @@ public:
     auto softmaxOp = builder.create<sora::SoftmaxOp>(unknowloc, inOutType, outScaleType, funcOp.getArgument(0), -1, true);
     auto returnOp = builder.create<func::ReturnOp>(unknowloc, softmaxOp->getResults());
 
-    // auto returnOp = dyn_cast<func::ReturnOp>(funcOp.back());
   }
 
   ModuleOp mlirGen() {

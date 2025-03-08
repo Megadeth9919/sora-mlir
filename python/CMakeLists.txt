@@ -27,7 +27,7 @@ declare_mlir_dialect_python_bindings(
 
 
 declare_mlir_python_extension(SoraMLIRPythonExtension.RegisterEverything
-  MODULE_NAME _mlirRegisterEverything # 该name与RegisterEverything.cpp中PYBIND11_MODULE(_mlirRegisterEverything, m)对应
+  MODULE_NAME _mlirRegisterEverything # 与RegisterEverything.cpp中PYBIND11_MODULE(_mlirRegisterEverything, m)对应
   ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/sora_mlir"
   SOURCES
     RegisterEverything.cpp

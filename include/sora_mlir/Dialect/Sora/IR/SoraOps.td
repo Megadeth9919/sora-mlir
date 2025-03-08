@@ -69,8 +69,7 @@ def Sora_SoftmaxOp: Sora_Op<"Softmax"> {
   );
 
   let results = (outs
-    AnyTensor:$output,
-    AnyTensorOrNone:$out_scale
+    AnyTensor:$output
   );
 }
 
@@ -84,8 +83,7 @@ def Sora_GeluOp : Sora_Op<"Gelu"> {
     DefaultValuedAttr<BoolAttr, "false">:$dynamic_scale
   );
   let results = (outs
-    AnyTensor:$output,
-    AnyTensorOrNone:$out_scale
+    AnyTensor:$output
   );
 }
 
@@ -101,8 +99,7 @@ def Sora_ConvertOp : Sora_Op<"Convert"> {
     NamedTypeAttr:$out_type
   );
   let results = (outs
-    AnyTensor:$output,
-    AnyTensorOrNone:$out_scale
+    AnyTensor:$output
   );
 }
 
@@ -116,8 +113,7 @@ def Sora_RmsnormOp : Sora_Op<"Rmsnorm"> {
     DefaultValuedAttr<BoolAttr, "false">:$dynamic_scale
   );
   let results = (outs
-    AnyTensor:$output,
-    AnyTensorOrNone:$out_scale
+    AnyTensor:$output
   );
 }
 
@@ -131,8 +127,7 @@ def Sora_LayernormOp : Sora_Op<"Layernorm"> {
     DefaultValuedAttr<BoolAttr, "false">:$dynamic_scale
   );
   let results = (outs
-    AnyTensor:$output,
-    AnyTensorOrNone:$out_scale
+    AnyTensor:$output
   );
 }
 
@@ -148,8 +143,7 @@ def Sora_ElementwiseOp : Sora_Op<"Elementwise"> {
     DefaultValuedAttr<BoolAttr, "false">:$dynamic_scale
   );
   let results = (outs
-    AnyTensor:$output,
-    AnyTensorOrNone:$out_scale
+    AnyTensor:$output
   );
 }
 
@@ -165,8 +159,7 @@ def Sora_RopeOp : Sora_Op<"Rope"> {
     DefaultValuedAttr<BoolAttr, "false">:$dynamic_scale
   );
   let results = (outs
-    AnyTensor:$output,
-    AnyTensorOrNone:$out_scale
+    AnyTensor:$output
   );
 }
 
@@ -178,7 +171,6 @@ def Sora_LinearW8Op : Sora_Op<"LinearW8"> {
   let arguments = (ins
     AnyTensor:$input,
     AnyTensor:$weight,
-    AnyTensor:$weight_scale,
     DefaultValuedAttr<BoolAttr, "false">:$do_bias,
     AnyTensorOrNone:$bias
   );
@@ -194,9 +186,7 @@ def Sora_MatmulW8Op  : Sora_Op<"MatmulW8"> {
   }];
   let arguments = (ins
     AnyTensor:$A,
-    AnyTensor:$B,
-    AnyTensor:$A_scale,
-    AnyTensor:$B_scale
+    AnyTensor:$B
   );
   let results = (outs
     AnyTensor:$output

@@ -1,38 +1,12 @@
 # import mlir.dialects.SoraOps as sora
 from mlir.ir import *
-from dataclasses import dataclass
-
-
-@dataclass
-class TensorType:
-    shape: list
-    element_type: str
-    
-    def to_mlir_type(self):
-        return MLIRAdaptor.get_tensor_type(self.shape, self.element_type)
-
 class MLIRAdaptor():
-    def __init__(self,
-                 model_name: str,
-                 model_input_types: list[TensorType],
-                 model_output_types: list[TensorType],
-                 do_init_module: bool = True):
-        assert (len(model_name) > 0)
-        self.model_name = model_name
+    def __init__(self):
         self.ctx = Context()
         self.ctx.allow_unregistered_dialects = True
         self.loc = Location.unknown(self.ctx)
         self.ctx.__enter__()
         self.loc.__enter__()
-        self.model_input_types = model_input_types
-        self.model_output_types = model_output_types
-        self.num_input = len(model_input_types)
-        self.num_output = len(model_output_types)
-        self.input_mlir_types = [type.to_mlir_type() for type in self.model_input_types]
-        self.output_mlir_types = [type.to_mlir_type() for type in self.model_output_types]
-        # init module
-        if do_init_module:
-            self.declare_func()
   
     def __del__(self):
         try:
@@ -49,10 +23,10 @@ class MLIRAdaptor():
         return mlir_format
     
     def print_module(self):
-        self.mlir_module.operation.print()
+        self.mlir_module.operation.print(enable_debug_info=True)
         
     @staticmethod
-    def get_element_type(element_type):
+    def get_element_type(element_type: str):
         mlir_type = {
             "INT8": IntegerType.get_signed(8),
             "UINT8": IntegerType.get_unsigned(8),
@@ -61,7 +35,7 @@ class MLIRAdaptor():
             "UINT16": IntegerType.get_unsigned(16),
             "INT32": IntegerType.get_signed(32),
             "UINT32": IntegerType.get_unsigned(32),
-            "INT64": IntegerType.get_signless(64),  # special
+            "INT64": IntegerType.get_signless(64),
             "UINT64": IntegerType.get_unsigned(64),
             "BOOL": IntegerType.get_signless(1),
             "F64": F64Type.get(),
@@ -76,23 +50,34 @@ class MLIRAdaptor():
         return mlir_type[element_type]
     
     @staticmethod
-    def get_tensor_type(shape: list = None, element_type: str = None):
+    def get_tensor_type(shape: list = None, element_type: Type = None) -> ShapedType:
         assert (shape != None) and (element_type != None)
-        return RankedTensorType.get(shape, MLIRAdaptor.get_element_type(element_type))
+        return RankedTensorType.get(shape, element_type)
     
     @staticmethod
     def get_none_type():
         return NoneType.get()
     
-    def declare_func(self):
+    def init_module(self,
+                    model_name: str,
+                    model_input_types: list[Type],
+                    model_output_types: list[Type]):
+        
+        assert (len(model_name) > 0)
+        self.model_name = model_name
+        self.model_input_types = model_input_types
+        self.model_output_types = model_output_types
+        self.num_input = len(model_input_types)
+        self.num_output = len(model_output_types)
+        
         args_txt = str()
-        for _idx, _type in enumerate(self.input_mlir_types):
+        for _idx, _type in enumerate(self.model_input_types):
             args_txt += "%args{}: {} loc(unknown)".format(_idx, _type.__str__())
             if (_idx + 1) < self.num_input:
                 args_txt += ", "
 
         output_txt = str()
-        for _idx, _type in enumerate(self.output_mlir_types):
+        for _idx, _type in enumerate(self.model_output_types):
             output_txt += _type.__str__()
             if (_idx + 1) < self.num_output:
                 output_txt += ", "

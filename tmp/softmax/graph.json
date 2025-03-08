@@ -1,0 +1,115 @@
+{
+    "ops": [
+        {
+            "name": "softmax",
+            "weights": {},
+            "dscale": true,
+            "input": {
+                "id": 2,
+                "shape": [
+                    33,
+                    8,
+                    28,
+                    28
+                ],
+                "name": "input",
+                "data_type": "float16",
+                "addr": null,
+                "dscale": false,
+                "const": false,
+                "cached": false,
+                "reside_ddr": true
+            },
+            "output": {
+                "id": 3,
+                "shape": [
+                    33,
+                    8,
+                    28,
+                    28
+                ],
+                "name": "softmax.output",
+                "data_type": "int8",
+                "addr": null,
+                "dscale": false,
+                "const": false,
+                "cached": false,
+                "reside_ddr": true
+            },
+            "act_scale": {
+                "id": 4,
+                "shape": [
+                    33,
+                    8,
+                    28,
+                    1
+                ],
+                "name": "softmax.output.act_scale",
+                "data_type": "float32",
+                "addr": null,
+                "dscale": true,
+                "const": false,
+                "cached": false,
+                "reside_ddr": true
+            },
+            "op_type": "softmax",
+            "inputs": [
+                2
+            ],
+            "outputs": [
+                3,
+                4
+            ]
+        }
+    ],
+    "tensors": [
+        {
+            "id": 2,
+            "shape": [
+                33,
+                8,
+                28,
+                28
+            ],
+            "name": "input",
+            "data_type": "float16",
+            "addr": null,
+            "dscale": false,
+            "const": false,
+            "cached": false,
+            "reside_ddr": true
+        },
+        {
+            "id": 3,
+            "shape": [
+                33,
+                8,
+                28,
+                28
+            ],
+            "name": "softmax.output",
+            "data_type": "int8",
+            "addr": null,
+            "dscale": false,
+            "const": false,
+            "cached": false,
+            "reside_ddr": true
+        },
+        {
+            "id": 4,
+            "shape": [
+                33,
+                8,
+                28,
+                1
+            ],
+            "name": "softmax.output.act_scale",
+            "data_type": "float32",
+            "addr": null,
+            "dscale": true,
+            "const": false,
+            "cached": false,
+            "reside_ddr": true
+        }
+    ]
+}
