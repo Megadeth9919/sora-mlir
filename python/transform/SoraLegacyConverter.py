@@ -2,6 +2,7 @@ from .MLIRAdaptor import *
 from .BaseConverter import BaseConverter
 from soracc_legacy.graph_ir import *
 import mlir.dialects.SoraOps as sora
+from tqdm import tqdm
 
 class SoraLegacyConverter():
     def __init__(self,
@@ -22,10 +23,11 @@ class SoraLegacyConverter():
             "convert": lambda op: self.convert_convert_op(op),
             "rmsnorm": lambda op: self.convert_rmsnorm_op(op),
             "layernorm": lambda op: self.convert_layernorm_op(op),
-            "elementwise": lambda op: self.convert_elementwise_op(op),
-            "rope": lambda op: self.convert_rope_op(op),
+            "eltwise": lambda op: self.convert_elementwise_op(op),
+            "div": lambda op: self.convert_div_op(op),
+            "rotary": lambda op: self.convert_rope_op(op),
             "linear_w8": lambda op: self.convert_linearw8_op(op),
-            "matmul_w8": lambda op: self.convert_matmulw8_op(op),
+            "matmul": lambda op: self.convert_matmulw8_op(op),
             "transpose": lambda op: self.convert_transpose_op(op),
             "split": lambda op: self.convert_split_op(op),
             "view": lambda op: self.convert_view_op(op)
@@ -40,10 +42,10 @@ class SoraLegacyConverter():
     def get_mlir_element_type(self, t: Tensor):
         # DataType.float16  ->  float16  ->  F16 -> mlir.ir.F16Type.get()
         #               (soralegacy)       (Adaptor)     (MLIR)
-        return MLIRAdaptor.get_element_type(self.convert_type[t.data_type.name])
+        return self.mlir.get_element_type(self.convert_type[t.data_type.name])
     
     def get_mlir_tensor_type(self, t: Tensor):
-        return MLIRAdaptor.get_tensor_type(t.shape, self.get_mlir_element_type(t))
+        return self.mlir.get_tensor_type(t.shape, self.get_mlir_element_type(t))
     
     def get_loc(self, names):
         if isinstance(names, str):
@@ -56,14 +58,16 @@ class SoraLegacyConverter():
     def add_value(self, tensor: Tensor, value: Value):
         if tensor._id in self.values:
             if self.values[tensor._id] != value:
-                raise KeyError("Value {} conflict".format(tensor._id))
+                raise KeyError("Value {} conflict".format(tensor.name))
         self.values[tensor._id] = value
 
-    def get_value(self, tensor: Tensor):
+    def get_value(self, tensor: Tensor) -> Value:
         if tensor._id not in self.values:
             if tensor in self.graph.get_weights():
                 return self.create_weight_op(tensor).output
-            raise KeyError("Value {} not found".format(tensor._id))
+            elif tensor in self.graph.get_const():
+                return self.create_weight_op(tensor).output
+            raise KeyError("Value {} not found".format(tensor.name))
         return self.values[tensor._id]
         
     def init_mlir(self):
@@ -113,7 +117,6 @@ class SoraLegacyConverter():
         new_op = sora.ConvertOp(output=output_type,
                                 input=input,
                                 dynamic_scale=op.act_scale_flag,
-                                out_type=op.out_type,
                                 loc=self.get_loc(op.name),
                                 ip=self.mlir.insert_point)
         self.add_value(op.get_output, new_op.output)
@@ -143,17 +146,17 @@ class SoraLegacyConverter():
         rhs = self.get_value(op.get_input_B)
         output_type = self.get_mlir_tensor_type(op.get_output)
         new_op = sora.ElementwiseOp(output=output_type,
-                                lhs=lhs,
-                                rhs=rhs,
-                                op_type=op.type,
-                                dynamic_scale=op.act_scale_flag,
-                                loc=self.get_loc(op.name),
-                                ip=self.mlir.insert_point)
+                                    lhs=lhs,
+                                    rhs=rhs,
+                                    op_type=self.mlir.get_string_attr(op.type),
+                                    dynamic_scale=op.act_scale_flag,
+                                    loc=self.get_loc(op.name),
+                                    ip=self.mlir.insert_point)
         self.add_value(op.get_output, new_op.output)
 
     def convert_rope_op(self, op: RoPE):
         input = self.get_value(op.get_input)
-        cos_sin_table = self.get_value(op.get_cos_sin_table)
+        cos_sin_table = self.get_value(op.get_cos_sin_table())
         output_type = self.get_mlir_tensor_type(op.get_output)
         new_op = sora.RopeOp(output=output_type,
                             input=input,
@@ -164,23 +167,23 @@ class SoraLegacyConverter():
                             ip=self.mlir.insert_point)
         self.add_value(op.get_output, new_op.output)
 
-    def convert_linearw8_op(self, op):
-        input = self.get_value(op.get_input)
-        weight = self.get_value(op.get_inputs()[1])
-        bias = self.get_value(op.get_inputs()[2]) if op.do_bias else None
+    def convert_linearw8_op(self, op: LinearW8):
+        input = self.get_value(op.get_feature)
+        weight = self.get_value(op.get_weight[0])
+        bias = self.get_value(op.get_bias) if op.bias_flag else self.mlir.none_op
         output_type = self.get_mlir_tensor_type(op.get_output)
         new_op = sora.LinearW8Op(output=output_type,
                                 input=input,
                                 weight=weight,
-                                do_bias=op.do_bias,
+                                do_bias=op.bias_flag,
                                 bias=bias,
                                 loc=self.get_loc(op.name),
                                 ip=self.mlir.insert_point)
         self.add_value(op.get_output, new_op.output)
 
-    def convert_matmulw8_op(self, op):
-        a = self.get_value(op.get_input)
-        b = self.get_value(op.get_inputs()[1])
+    def convert_matmulw8_op(self, op: Matmul):
+        a = self.get_value(op.get_matrix_A)
+        b = self.get_value(op.get_matrix_B)
         output_type = self.get_mlir_tensor_type(op.get_output)
         new_op = sora.MatmulW8Op(output=output_type,
                                 A=a,
@@ -190,17 +193,23 @@ class SoraLegacyConverter():
         self.add_value(op.get_output, new_op.output)
 
     def convert_transpose_op(self, op):
+        # skip scale
+        if op.get_input.get_def() and op.get_input.get_def().act_scale_flag and op.get_input == op.get_input.get_def().get_act_scale:
+            return
+        if op.get_input._id not in self.values:
+            return
+        
         input = self.get_value(op.get_input)
         output_type = self.get_mlir_tensor_type(op.get_output)
         new_op = sora.TransposeOp(output=output_type,
-                                input=input,
-                                dim_a=op.dim_a,
-                                dim_b=op.dim_b,
-                                loc=self.get_loc(op.name),
-                                ip=self.mlir.insert_point)
+                                  input=input,
+                                  dim_a=op.dim_a,
+                                  dim_b=op.dim_b,
+                                  loc=self.get_loc(op.name),
+                                  ip=self.mlir.insert_point)
         self.add_value(op.get_output, new_op.output)
 
-    def convert_split_op(self, op):
+    def convert_split_op(self, op: Split):
         input = self.get_value(op.get_input)
         output_types = [self.get_mlir_tensor_type(t) for t in op.get_outputs()]
         new_op = sora.SplitOp(outputs=output_types,
@@ -211,19 +220,43 @@ class SoraLegacyConverter():
                             ip=self.mlir.insert_point)
         for output_tensor, result in zip(op.get_outputs(), new_op.outputs):
             self.add_value(output_tensor, result)
+            
+    def convert_div_op(self, op: Div):
+        op.type = 'div'
+        self.convert_elementwise_op(op)
 
-    def convert_view_op(self, op):
-        input = self.get_value(op.get_input)
-        shape = self.get_value(op.get_inputs()[1])
+    def convert_view_op(self, op: View):
+        # skip scale's view
+        if op.get_input.get_def() and op.get_input.get_def().act_scale_flag and op.get_input == op.get_input.get_def().get_act_scale:
+            return
+        if op.get_input._id not in self.values:
+            return
+        
+        input: OpResult = self.get_value(op.get_input)
         output_type = self.get_mlir_tensor_type(op.get_output)
+        shape = self.mlir.get_array_attr(op.shape)
         new_op = sora.ViewOp(output=output_type,
-                            input=input,
-                            shape=shape,
-                            loc=self.get_loc(op.name),
-                            ip=self.mlir.insert_point)
+                             input=input,
+                             shape=shape,
+                             loc=self.get_loc(op.name),
+                             ip=self.mlir.insert_point)
         self.add_value(op.get_output, new_op.output)
 
     def generate_mlir(self, mlir_file=None):
-        for op in self.graph.get_ops():
-            self.op_factory[op.op_type](op)
-        self.mlir.print_module()
+        try:
+            for op in tqdm(self.graph.get_ops(), desc="Convert Ops", unit="op"):
+                self.op_factory[op.op_type](op)
+        except Exception as e:
+            print(f"An error occurred during MLIR generation: {e}")
+            if mlir_file is not None:
+                with open(mlir_file, 'w') as f:
+                    f.write(self.mlir.get_module_asm())
+            else:
+                self.mlir.print_module()
+            raise
+
+        if mlir_file is not None:
+            with open(mlir_file, 'w') as f:
+                f.write(self.mlir.get_module_asm())
+        else:
+            self.mlir.print_module()

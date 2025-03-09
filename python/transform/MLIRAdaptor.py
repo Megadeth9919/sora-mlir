@@ -1,4 +1,3 @@
-# import mlir.dialects.SoraOps as sora
 from mlir.ir import *
 class MLIRAdaptor():
     def __init__(self):
@@ -7,27 +6,7 @@ class MLIRAdaptor():
         self.loc = Location.unknown(self.ctx)
         self.ctx.__enter__()
         self.loc.__enter__()
-  
-    def __del__(self):
-        try:
-            self.loc.__exit__(None, None, None)
-        except:
-            pass
-        try:
-            self.ctx.__exit__(None, None, None)
-        except:
-            pass
-    
-    def get_module_asm(self, enable_debug_info=True):
-        mlir_format = self.mlir_module.operation.get_asm(enable_debug_info)
-        return mlir_format
-    
-    def print_module(self):
-        self.mlir_module.operation.print(enable_debug_info=True)
-        
-    @staticmethod
-    def get_element_type(element_type: str):
-        mlir_type = {
+        self.mlir_type = {
             "INT8": IntegerType.get_signed(8),
             "UINT8": IntegerType.get_unsigned(8),
             "SINT8": IntegerType.get_signed(8),
@@ -44,18 +23,47 @@ class MLIRAdaptor():
             "BF16": BF16Type.get(),
             "DICT": DictAttr.get(),
         }
-        if element_type not in mlir_type:
-            raise ValueError(f"Unsupported element type: {element_type}. "
-                            f"Supported types are: {', '.join(mlir_type.keys())}")
-        return mlir_type[element_type]
+        
+
+    def __del__(self):
+        try:
+            self.loc.__exit__(None, None, None)
+        except:
+            pass
+        try:
+            self.ctx.__exit__(None, None, None)
+        except:
+            pass
     
-    @staticmethod
-    def get_tensor_type(shape: list = None, element_type: Type = None) -> ShapedType:
+    def get_module_asm(self, enable_debug_info=True):
+        mlir_format = self.mlir_module.operation.get_asm(enable_debug_info=enable_debug_info)
+        return mlir_format
+    
+    def print_module(self):
+        self.mlir_module.operation.print(enable_debug_info=True)
+        
+    def get_element_type(self, element_type: str):
+        if element_type not in self.mlir_type:
+            raise ValueError(f"Unsupported element type: {element_type}. "
+                            f"Supported types are: {', '.join(self.mlir_type.keys())}")
+        return self.mlir_type[element_type]
+    
+    def get_tensor_type(self, shape: list = None, element_type: Type = None) -> ShapedType:
         assert (shape != None) and (element_type != None)
         return RankedTensorType.get(shape, element_type)
     
-    @staticmethod
-    def get_none_type():
+    def get_string_attr(self, str: str):
+        return StringAttr.get(str, self.ctx)
+    
+    def get_array_attr(self, arr, data_type='INT64'):
+        assert (data_type in self.mlir_type)
+        if data_type.find("INT") >= 0:
+            return ArrayAttr.get([IntegerAttr.get(self.mlir_type[data_type], x) for x in arr], self.ctx)
+        else:
+            raise NotImplementedError()
+                
+    
+    def get_none_type(self):
         return NoneType.get()
     
     def init_module(self,

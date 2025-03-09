@@ -95,8 +95,7 @@ def Sora_ConvertOp : Sora_Op<"Convert"> {
   }];
   let arguments = (ins
     AnyTensor:$input,
-    DefaultValuedAttr<BoolAttr, "false">:$dynamic_scale,
-    NamedTypeAttr:$out_type
+    DefaultValuedAttr<BoolAttr, "false">:$dynamic_scale
   );
   let results = (outs
     AnyTensor:$output
@@ -164,7 +163,7 @@ def Sora_RopeOp : Sora_Op<"Rope"> {
 }
 
 def Sora_LinearW8Op : Sora_Op<"LinearW8"> {
-  let summary = "Linear layer with 8-bit weights (int8)";
+  let summary = "Linear layer with 8-bit (int8)";
   let description = [{
     The operation performs: y = x * weight + bias (if bias is provided).
   }];
@@ -223,7 +222,7 @@ def Sora_SplitOp : Sora_Op<"Split"> {
 def Sora_ViewOp : Sora_Op<"View"> {
   let arguments = (ins
     AnyTensor:$input,
-    AnyTensor:$shape
+    I64ArrayAttr:$shape
   );
 
   let results = (outs
