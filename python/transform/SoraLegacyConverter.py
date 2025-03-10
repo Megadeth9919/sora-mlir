@@ -1,5 +1,4 @@
 from .MLIRAdaptor import *
-from .BaseConverter import BaseConverter
 from soracc_legacy.graph_ir import *
 import mlir.dialects.SoraOps as sora
 from tqdm import tqdm
