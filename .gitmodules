@@ -1,3 +1,6 @@
 [submodule "python/soracc_legacy"]
 	path = python/soracc_legacy
 	url = https://github.com/Megadeth9919/sora_cc.git
+[submodule "externals/llvm-project"]
+	path = externals/llvm-project
+	url = https://github.com/llvm/llvm-project.git

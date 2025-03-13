@@ -9,4 +9,4 @@ target_link_libraries(sorac-mlirgen
   MLIROptLib # 对应 #include "mlir/Tools/mlir-opt/MlirOptMain.h"
 )
 
-install(TARGETS sorac-mlirgen DESTINATION bin)
+# install(TARGETS sorac-mlirgen DESTINATION bin)
