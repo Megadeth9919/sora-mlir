@@ -57,7 +57,8 @@ def Sora_NoneOp : Sora_Op<"None"> {
   let results = (outs NoneType);
 }
 
-def Sora_SoftmaxOp: Sora_Op<"Softmax"> {
+def Sora_SoftmaxOp: Sora_Op<"Softmax", 
+                            [DeclareOpInterfaceMethods<DimMergeInterface>]> {
   let summary = "Softmax operation";
   let description = [{
     # Math: y = \frac{e^{x_i - \max(x)}}{\sum_{j=1}^{n} e^{x_j - \max(x)}}
@@ -73,7 +74,8 @@ def Sora_SoftmaxOp: Sora_Op<"Softmax"> {
   );
 }
 
-def Sora_GeluOp : Sora_Op<"Gelu"> {
+def Sora_GeluOp : Sora_Op<"Gelu", 
+                          [DeclareOpInterfaceMethods<DimMergeInterface>]> {
   let summary = "GELU (Gaussian Error Linear Unit) operation";
   let description = [{
     # Math: y = 0.5 * x * (1 + tanh(\sqrt{\frac{2}{\pi}} * (x + 0.044715 * x^3)))
@@ -88,7 +90,8 @@ def Sora_GeluOp : Sora_Op<"Gelu"> {
 }
 
 
-def Sora_ConvertOp : Sora_Op<"Convert"> {
+def Sora_ConvertOp : Sora_Op<"Convert", 
+                              [DeclareOpInterfaceMethods<DimMergeInterface>]> {
   let summary = "Convert operation to change the data type of a tensor";
   let description = [{
     # Converts the input tensor to the specified output type.
@@ -102,7 +105,8 @@ def Sora_ConvertOp : Sora_Op<"Convert"> {
   );
 }
 
-def Sora_RmsnormOp : Sora_Op<"Rmsnorm"> {
+def Sora_RmsnormOp : Sora_Op<"Rmsnorm", 
+                              [DeclareOpInterfaceMethods<DimMergeInterface>]> {
   let summary = "Root Mean Square Layer Normalization operation";
   let description = [{
     # Math: y = \frac{x}{\sqrt{\frac{1}{n}\sum_{i=1}^{n}x_i^2 + \epsilon}} * \gamma + \beta
@@ -116,7 +120,8 @@ def Sora_RmsnormOp : Sora_Op<"Rmsnorm"> {
   );
 }
 
-def Sora_LayernormOp : Sora_Op<"Layernorm"> {
+def Sora_LayernormOp : Sora_Op<"Layernorm", 
+                              [DeclareOpInterfaceMethods<DimMergeInterface>]> {
   let summary = "Layer Normalization operation";
   let description = [{
     # Math: y = \frac{x - \mu_g}{\sqrt{\sigma_g^2 + \epsilon}} \gamma + \beta
@@ -162,7 +167,8 @@ def Sora_RopeOp : Sora_Op<"Rope"> {
   );
 }
 
-def Sora_LinearW8Op : Sora_Op<"LinearW8"> {
+def Sora_LinearW8Op : Sora_Op<"LinearW8", 
+                              [DeclareOpInterfaceMethods<DimMergeInterface>]> {
   let summary = "Linear layer with 8-bit (int8)";
   let description = [{
     The operation performs: y = x * weight + bias (if bias is provided).
