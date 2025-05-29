@@ -6,7 +6,7 @@ add_mlir_public_c_api_library(SoraMLIRCAPI
   Core
 
   LINK_LIBS PUBLIC
-  SoraDialect
   MLIRIR
   MLIRFuncDialect
+  SoraMLIRSoraDialect
 )

@@ -80,8 +80,8 @@ int main(int argc, char **argv) {
   DialectRegistry registry;
   registry.insert<sora::SoraDialect, func::FuncDialect>();
   MLIRContext context(registry);
-  context.loadDialect<sora::SoraDialect>();
-  context.loadDialect<func::FuncDialect>();
+  // context.loadDialect<sora::SoraDialect>();
+  // context.loadDialect<func::FuncDialect>();
   OwningOpRef<ModuleOp> module = MLIRGen(context).mlirGen();
   module->dump();
   return 0;

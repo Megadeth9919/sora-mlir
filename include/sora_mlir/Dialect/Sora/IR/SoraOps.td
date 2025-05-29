@@ -2,6 +2,7 @@
 #define SORA_OPS
 
 include "mlir/IR/OpBase.td"
+include "sora_mlir/Interfaces/DimMergeInterface.td"
 // =============================================================================
 //
 // Defines Sora Dialect operations.
@@ -37,7 +38,9 @@ def ElementWiseTypeAttr: AnyStrAttrOf<["add", "sub", "mul", "div"]>;
 
 // === BaseOp ===== //
 class Sora_Op<string mnemonic, list<Trait> traits = []> :
-    Op<Sora_Dialect, mnemonic, traits> ;
+    Op<Sora_Dialect, mnemonic, traits> {
+
+}
 
 
 def Sora_WeightOp : Sora_Op<"Weight"> {
@@ -72,6 +75,7 @@ def Sora_SoftmaxOp: Sora_Op<"Softmax",
   let results = (outs
     AnyTensor:$output
   );
+  let hasVerifier = 1;
 }
 
 def Sora_GeluOp : Sora_Op<"Gelu", 
@@ -87,11 +91,12 @@ def Sora_GeluOp : Sora_Op<"Gelu",
   let results = (outs
     AnyTensor:$output
   );
+  let hasVerifier = 1;
 }
 
 
 def Sora_ConvertOp : Sora_Op<"Convert", 
-                              [DeclareOpInterfaceMethods<DimMergeInterface>]> {
+                             [DeclareOpInterfaceMethods<DimMergeInterface>]> {
   let summary = "Convert operation to change the data type of a tensor";
   let description = [{
     # Converts the input tensor to the specified output type.
@@ -103,10 +108,11 @@ def Sora_ConvertOp : Sora_Op<"Convert",
   let results = (outs
     AnyTensor:$output
   );
+  let hasVerifier = 1;
 }
 
 def Sora_RmsnormOp : Sora_Op<"Rmsnorm", 
-                              [DeclareOpInterfaceMethods<DimMergeInterface>]> {
+                             [DeclareOpInterfaceMethods<DimMergeInterface>]> {
   let summary = "Root Mean Square Layer Normalization operation";
   let description = [{
     # Math: y = \frac{x}{\sqrt{\frac{1}{n}\sum_{i=1}^{n}x_i^2 + \epsilon}} * \gamma + \beta
@@ -118,6 +124,7 @@ def Sora_RmsnormOp : Sora_Op<"Rmsnorm",
   let results = (outs
     AnyTensor:$output
   );
+  let hasVerifier = 1;
 }
 
 def Sora_LayernormOp : Sora_Op<"Layernorm", 
@@ -133,6 +140,7 @@ def Sora_LayernormOp : Sora_Op<"Layernorm",
   let results = (outs
     AnyTensor:$output
   );
+  let hasVerifier = 1;
 }
 
 def Sora_ElementwiseOp : Sora_Op<"Elementwise"> {
@@ -149,6 +157,7 @@ def Sora_ElementwiseOp : Sora_Op<"Elementwise"> {
   let results = (outs
     AnyTensor:$output
   );
+  let hasVerifier = 1;
 }
 
 def Sora_RopeOp : Sora_Op<"Rope"> {
@@ -165,6 +174,7 @@ def Sora_RopeOp : Sora_Op<"Rope"> {
   let results = (outs
     AnyTensor:$output
   );
+  let hasVerifier = 1;
 }
 
 def Sora_LinearW8Op : Sora_Op<"LinearW8", 
@@ -182,6 +192,7 @@ def Sora_LinearW8Op : Sora_Op<"LinearW8",
   let results = (outs
     AnyTensor:$output
   );
+  let hasVerifier = 1;
 }
 
 def Sora_MatmulW8Op  : Sora_Op<"MatmulW8"> {
@@ -196,6 +207,7 @@ def Sora_MatmulW8Op  : Sora_Op<"MatmulW8"> {
   let results = (outs
     AnyTensor:$output
   );
+  let hasVerifier = 1;
 }
 
 def Sora_TransposeOp : Sora_Op<"Transpose"> {
@@ -211,6 +223,7 @@ def Sora_TransposeOp : Sora_Op<"Transpose"> {
   let results = (outs
     AnyTensor:$output
   );
+  let hasVerifier = 1;
 }
 
 def Sora_SplitOp : Sora_Op<"Split"> {
@@ -223,6 +236,7 @@ def Sora_SplitOp : Sora_Op<"Split"> {
   let results = (outs
     Variadic<AnyTensor>:$outputs
   );
+  let hasVerifier = 1;
 }
 
 def Sora_ViewOp : Sora_Op<"View"> {
@@ -238,6 +252,7 @@ def Sora_ViewOp : Sora_Op<"View"> {
   let results = (outs
     AnyTensor:$output
   );
+  let hasVerifier = 1;
 }
 
 #endif  // SORA_OPS 
